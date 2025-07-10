@@ -65,7 +65,12 @@ const guildSchema = new mongoose.Schema({
   supportRoleId: String,
   logChannelId: String,
   archiveCategoryId: String,
-  autoRoleId: String
+  autoRoleId: String,
+  onboardConfig: {
+    channelId: String,
+    message: String,
+    seconds: Number
+  }
 }, {
   timestamps: true,
   _id: false

@@ -87,11 +87,27 @@ const configPath = path.join(__dirname, 'data/config.json');
 client.on('guildMemberAdd', async (member) => {
     const guildId = member.guild.id;
     let guildData = await database.getGuild(guildId);
+    // Auto-role assignment
     if (guildData && guildData.autoRoleId) {
         const role = member.guild.roles.cache.get(guildData.autoRoleId);
         if (role && !member.user.bot && !member.roles.cache.has(role.id)) {
             try {
                 await member.roles.add(role, 'Auto-role on join');
+            } catch (e) {}
+        }
+    }
+    // Onboarding tagging
+    if (guildData && guildData.onboardConfig && guildData.onboardConfig.channelId) {
+        const channel = member.guild.channels.cache.get(guildData.onboardConfig.channelId);
+        const seconds = guildData.onboardConfig.seconds || 3;
+        let message = guildData.onboardConfig.message || '{user}';
+        message = message.replace('{user}', `${member}`);
+        if (channel && channel.isTextBased()) {
+            try {
+                const msg = await channel.send({ content: message });
+                setTimeout(() => {
+                    msg.delete().catch(() => {});
+                }, seconds * 1000);
             } catch (e) {}
         }
     }
