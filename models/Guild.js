@@ -64,7 +64,8 @@ const guildSchema = new mongoose.Schema({
   },
   supportRoleId: String,
   logChannelId: String,
-  archiveCategoryId: String
+  archiveCategoryId: String,
+  autoRoleId: String
 }, {
   timestamps: true,
   _id: false

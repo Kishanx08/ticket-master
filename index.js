@@ -80,3 +80,19 @@ process.on("uncaughtException", (error) => {
 
 // Start the bot
 initializeBot();
+
+// Auto-role assignment on member join
+const configPath = path.join(__dirname, 'data/config.json');
+
+client.on('guildMemberAdd', async (member) => {
+    const guildId = member.guild.id;
+    let guildData = await database.getGuild(guildId);
+    if (guildData && guildData.autoRoleId) {
+        const role = member.guild.roles.cache.get(guildData.autoRoleId);
+        if (role && !member.user.bot && !member.roles.cache.has(role.id)) {
+            try {
+                await member.roles.add(role, 'Auto-role on join');
+            } catch (e) {}
+        }
+    }
+});

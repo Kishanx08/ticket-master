@@ -30,5 +30,23 @@ module.exports = {
 
         // Set bot status
         client.user.setActivity('Managing tickets | /ticket setup', { type: 'WATCHING' });
+
+        // Auto-role assignment for all members if autoRoleId is set in MongoDB
+        const database = require('../utils/database');
+        for (const [guildId, guild] of client.guilds.cache) {
+            let guildData = await database.getGuild(guildId);
+            if (guildData && guildData.autoRoleId) {
+                await guild.members.fetch();
+                const role = guild.roles.cache.get(guildData.autoRoleId);
+                if (role) {
+                    const promises = guild.members.cache.filter(m => !m.user.bot && !m.roles.cache.has(role.id)).map(async member => {
+                        try {
+                            await member.roles.add(role, 'Auto-role sync on bot ready');
+                        } catch (e) {}
+                    });
+                    await Promise.all(promises);
+                }
+            }
+        }
     },
 };
