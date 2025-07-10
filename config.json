@@ -135,38 +135,6 @@
                     "maxLength": 500
                 }
             ]
-        },
-        "general": {
-            "label": "General Support",
-            "emoji": "💬",
-            "description": "General support request",
-            "color": "0x0099FF",
-            "questions": [
-                {
-                    "id": "description",
-                    "label": "Please describe your request",
-                    "placeholder": "Describe what you need help with",
-                    "style": "Paragraph",
-                    "required": true,
-                    "maxLength": 2000
-                }
-            ]
-        },
-        "maintenance": {
-            "label": "Maintenance Support",
-            "emoji": "🛠️",
-            "description": "Website maintenance and updates",
-            "color": "0xFFAA00",
-            "questions": [
-                {
-                    "id": "description",
-                    "label": "Please describe your request",
-                    "placeholder": "Describe what you need help with",
-                    "style": "Paragraph",
-                    "required": true,
-                    "maxLength": 2000
-                }
-            ]
         }
     },
     "statusMessages": {
