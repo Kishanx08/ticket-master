@@ -1,0 +1,211 @@
+{
+    "defaultSettings": {
+        "ticketCategoryName": "tickets",
+        "archiveCategoryName": "ticket-archives",
+        "maxOpenTicketsPerUser": 1,
+        "autoCloseInactive": false,
+        "inactiveTimeoutHours": 72,
+        "logEvents": true,
+        "generateTranscripts": true,
+        "transcriptFormat": "txt"
+    },
+    "setupEmbed": {
+        "title": "🎫 Web Development Services",
+        "description": "Welcome to our web development services! Choose an option below to get started with your project.",
+        "color": "0x0099FF",
+        "fields": [
+            {
+                "name": "📋 Services Offered",
+                "value": "• Custom Website Development\n• E-commerce Solutions\n• Web Application Development\n• Website Redesign\n• Maintenance & Support",
+                "inline": false
+            },
+            {
+                "name": "⏱️ Response Time",
+                "value": "We typically respond within 2-4 hours during business hours.",
+                "inline": false
+            },
+            {
+                "name": "💼 Process",
+                "value": "1. Create a ticket\n2. Fill out the project form\n3. Discuss requirements\n4. Receive quote\n5. Project completion",
+                "inline": false
+            }
+        ],
+        "footer": {
+            "text": "DevFoundry",
+            "iconUrl": null
+        },
+        "thumbnail": "https://harry.x02.me/i/firefox_jVgjlt5ltz_01.png",
+        "image": null
+    },
+    "ticketTypes": {
+        "website": {
+            "label": "Order Website",
+            "emoji": "🌐",
+            "description": "Get a custom website built",
+            "color": "0x00FF00",
+            "questions": [
+                {
+                    "id": "project_type",
+                    "label": "What type of website do you need?",
+                    "placeholder": "e.g., E-commerce, Portfolio, Business website, Blog",
+                    "style": "Short",
+                    "required": true,
+                    "maxLength": 100
+                },
+                {
+                    "id": "budget",
+                    "label": "What is your budget range?",
+                    "placeholder": "e.g., $500-$1000, $1000-$2500, $2500+",
+                    "style": "Short",
+                    "required": true,
+                    "maxLength": 50
+                },
+                {
+                    "id": "timeline",
+                    "label": "When do you need this completed?",
+                    "placeholder": "e.g., 2 weeks, 1 month, ASAP, Flexible",
+                    "style": "Short",
+                    "required": true,
+                    "maxLength": 50
+                },
+                {
+                    "id": "description",
+                    "label": "Detailed project description",
+                    "placeholder": "Describe requirements, features, design preferences, target audience",
+                    "style": "Paragraph",
+                    "required": true,
+                    "maxLength": 2000
+                },
+                {
+                    "id": "contact",
+                    "label": "Preferred contact method (optional)",
+                    "placeholder": "e.g., Discord DM, Email: your@email.com, Phone",
+                    "style": "Short",
+                    "required": false,
+                    "maxLength": 100
+                }
+            ]
+        },
+        "support": {
+            "label": "Existing Project Support",
+            "emoji": "🔧",
+            "description": "Get help with an existing project",
+            "color": "0xFFAA00",
+            "questions": [
+                {
+                    "id": "project_name",
+                    "label": "What is the name/URL of your project?",
+                    "placeholder": "e.g., mywebsite.com, Project ABC",
+                    "style": "Short",
+                    "required": true,
+                    "maxLength": 100
+                },
+                {
+                    "id": "issue_type",
+                    "label": "What type of support do you need?",
+                    "placeholder": "e.g., Bug fix, Feature addition, Maintenance, Optimization",
+                    "style": "Short",
+                    "required": true,
+                    "maxLength": 100
+                },
+                {
+                    "id": "urgency",
+                    "label": "How urgent is this issue?",
+                    "placeholder": "e.g., Critical (site down), High, Medium, Low",
+                    "style": "Short",
+                    "required": true,
+                    "maxLength": 50
+                },
+                {
+                    "id": "description",
+                    "label": "Detailed description of the issue",
+                    "placeholder": "Describe the problem, expected behavior, steps to reproduce",
+                    "style": "Paragraph",
+                    "required": true,
+                    "maxLength": 2000
+                },
+                {
+                    "id": "access_info",
+                    "label": "Access information (if needed)",
+                    "placeholder": "Admin login, FTP access, hosting info (kept secure)",
+                    "style": "Paragraph",
+                    "required": false,
+                    "maxLength": 500
+                }
+            ]
+        },
+        "general": {
+            "label": "General Support",
+            "emoji": "💬",
+            "description": "General support request",
+            "color": "0x0099FF",
+            "questions": [
+                {
+                    "id": "description",
+                    "label": "Please describe your request",
+                    "placeholder": "Describe what you need help with",
+                    "style": "Paragraph",
+                    "required": true,
+                    "maxLength": 2000
+                }
+            ]
+        },
+        "maintenance": {
+            "label": "Maintenance Support",
+            "emoji": "🛠️",
+            "description": "Website maintenance and updates",
+            "color": "0xFFAA00",
+            "questions": [
+                {
+                    "id": "description",
+                    "label": "Please describe your request",
+                    "placeholder": "Describe what you need help with",
+                    "style": "Paragraph",
+                    "required": true,
+                    "maxLength": 2000
+                }
+            ]
+        }
+    },
+    "statusMessages": {
+        "open": {
+            "message": "📝 **Status Update:** Your ticket is now **Open** and awaiting review.",
+            "color": "0x0099FF"
+        },
+        "in_progress": {
+            "message": "🚀 **Status Update:** Your project is now **In Progress**! I'm actively working on your requirements.",
+            "color": "0xFFAA00"
+        },
+        "awaiting_client": {
+            "message": "⏳ **Status Update:** Your ticket is **Awaiting Client Feedback**. Please review and respond when you can.",
+            "color": "0xFF6600"
+        },
+        "testing": {
+            "message": "🧪 **Status Update:** Your project is in **Testing Phase**. I'm conducting final tests and quality checks.",
+            "color": "0x9966FF"
+        },
+        "completed": {
+            "message": "✅ **Status Update:** Your project has been **Completed**! Please review the work and let me know if you need any adjustments.",
+            "color": "0x00FF00"
+        },
+        "on_hold": {
+            "message": "⏸️ **Status Update:** Your ticket is currently **On Hold**. This may be due to waiting for external resources or client requirements.",
+            "color": "0x888888"
+        }
+    },
+    "messages": {
+        "ticketCreated": "Your ticket has been created successfully!",
+        "ticketClosed": "This ticket has been closed.",
+        "alreadyHasTicket": "You already have an open ticket.",
+        "notTicketChannel": "This command can only be used in ticket channels.",
+        "noPermission": "You don't have permission to perform this action.",
+        "transcriptGenerated": "📄 Ticket transcript has been generated and sent.",
+        "ticketArchived": "📁 Ticket has been archived for future reference."
+    },
+    "embeds": {
+        "primaryColor": "0x0099FF",
+        "successColor": "0x00FF00",
+        "errorColor": "0xFF0000",
+        "warningColor": "0xFFFF00"
+    }
+}
