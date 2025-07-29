@@ -11,16 +11,16 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
+    await interaction.deferReply({ ephemeral: true });
     const licenseId = interaction.options.getString('license_id');
     try {
       await addLicense(licenseId);
-      await interaction.reply({ content: `✅ License ID \
-\`${licenseId}\` added to whitelist.`, ephemeral: true });
+      await interaction.editReply({ content: `✅ License ID \`${licenseId}\` added to whitelist.` });
     } catch (err) {
       if (err.code === 'ER_DUP_ENTRY') {
-        await interaction.reply({ content: '❌ This license ID is already whitelisted.', ephemeral: true });
+        await interaction.editReply({ content: '❌ This license ID is already whitelisted.' });
       } else {
-        await interaction.reply({ content: `❌ Error adding license: ${err.message}`, ephemeral: true });
+        await interaction.editReply({ content: `❌ Error adding license: ${err.message}` });
       }
     }
   },

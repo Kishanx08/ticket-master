@@ -11,17 +11,17 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
+    await interaction.deferReply({ ephemeral: true });
     const licenseId = interaction.options.getString('license_id');
     try {
       const result = await removeLicense(licenseId);
       if (result.affectedRows > 0) {
-        await interaction.reply({ content: `✅ License ID \
-\`${licenseId}\` removed from whitelist.`, ephemeral: true });
+        await interaction.editReply({ content: `✅ License ID \`${licenseId}\` removed from whitelist.` });
       } else {
-        await interaction.reply({ content: '❌ License ID not found in whitelist.', ephemeral: true });
+        await interaction.editReply({ content: '❌ License ID not found in whitelist.' });
       }
     } catch (err) {
-      await interaction.reply({ content: `❌ Error removing license: ${err.message}`, ephemeral: true });
+      await interaction.editReply({ content: `❌ Error removing license: ${err.message}` });
     }
   },
 }; 
