@@ -55,7 +55,7 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setTitle('Channel Created')
         .setDescription(`${channel} (${channel.id})`)
-        .addFields({ name: 'Created By', value: executor ? `${executor.tag} (${executor.id})` : 'Unknown' })
+        .addFields({ name: 'Created By', value: executor ? `<@${executor.id}> (${executor.tag})` : 'Unknown' })
         .setColor(0x00BFFF)
         .setTimestamp();
       await send(channel.guild, embed, 'channels');
@@ -67,7 +67,7 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setTitle('Channel Deleted')
         .setDescription(`${channel.name || 'Unknown'} (${channel.id})`)
-        .addFields({ name: 'Deleted By', value: executor ? `${executor.tag} (${executor.id})` : 'Unknown' })
+        .addFields({ name: 'Deleted By', value: executor ? `<@${executor.id}> (${executor.tag})` : 'Unknown' })
         .setColor(0x1E90FF)
         .setTimestamp();
       await send(channel.guild, embed, 'channels');
@@ -78,7 +78,7 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setTitle('Role Created')
         .setDescription(`${role.name} (${role.id})`)
-        .addFields({ name: 'Created By', value: executor ? `${executor.tag} (${executor.id})` : 'Unknown' })
+        .addFields({ name: 'Created By', value: executor ? `<@${executor.id}> (${executor.tag})` : 'Unknown' })
         .setColor(0x8A2BE2)
         .setTimestamp();
       await send(role.guild, embed, 'roles');
@@ -89,7 +89,7 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setTitle('Role Deleted')
         .setDescription(`${role.name} (${role.id})`)
-        .addFields({ name: 'Deleted By', value: executor ? `${executor.tag} (${executor.id})` : 'Unknown' })
+        .addFields({ name: 'Deleted By', value: executor ? `<@${executor.id}> (${executor.tag})` : 'Unknown' })
         .setColor(0x9932CC)
         .setTimestamp();
       await send(role.guild, embed, 'roles');
@@ -124,7 +124,7 @@ module.exports = {
           .setDescription(`${newRole.name} (${newRole.id})`)
           .addFields(
             ...changes,
-            { name: 'Updated By', value: executor ? `${executor.tag} (${executor.id})` : 'Unknown' },
+            { name: 'Updated By', value: executor ? `<@${executor.id}> (${executor.tag})` : 'Unknown' },
             { name: 'Time', value: `<t:${Math.floor(Date.now()/1000)}:f>` }
           )
           .setColor(0xFFD700)
@@ -153,7 +153,7 @@ module.exports = {
           .addFields(
             { name: 'Roles Added', value: addedRoles },
             { name: 'Roles Removed', value: removedRoles },
-            { name: 'Updated By', value: executor ? `${executor.tag} (${executor.id})` : 'Unknown' },
+            { name: 'Updated By', value: executor ? `<@${executor.id}> (${executor.tag})` : 'Unknown' },
             { name: 'Time', value: `<t:${Math.floor(Date.now()/1000)}:f>` }
           )
           .setColor(0x20B2AA)

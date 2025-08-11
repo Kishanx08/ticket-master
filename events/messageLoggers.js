@@ -30,7 +30,8 @@ module.exports = {
           .addFields(
             { name: 'Author', value: message.author ? `${message.author.tag} (${message.author.id})` : 'Unknown', inline: false },
             { name: 'Channel', value: `${message.channel}`, inline: false },
-            { name: 'Deleted By', value: executor ? `${executor.tag} (${executor.id})` : 'Unknown', inline: false },
+            { name: 'Deleted By', value: executor ? `<@${executor.id}> (${executor.tag})` : 'Unknown', inline: false },
+            { name: 'Time', value: `<t:${Math.floor(Date.now()/1000)}:f>`, inline: false },
           )
           .setColor(0xFF0000)
           .setTimestamp();
