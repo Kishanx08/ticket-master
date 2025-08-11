@@ -255,84 +255,35 @@ async function createTicketChannel(interaction, ticketType = 'website') {
         });
 
         // Send welcome message (simple for custom type)
-        let welcomeEmbed;
-        if (ticketType === 'custom') {
-            const subject = formData.subject || 'New Ticket';
-            const details = formData.details || '';
-            welcomeEmbed = new EmbedBuilder()
-                .setTitle(`🎫 Ticket #${ticket.ticketNumber} - ${subject}`)
-                .setDescription(`Hello ${interaction.user}. Your ticket has been created.`)
-                .addFields(
-                    ...(details ? [{ name: 'Details', value: details.length > 1024 ? details.slice(0, 1021) + '...' : details }] : [])
-                )
-                .setColor(0x0099FF);
-        } else {
-            welcomeEmbed = new EmbedBuilder()
-                .setTitle(`${typeConfig.emoji} Ticket #${ticket.ticketNumber} - ${typeConfig.name}`)
-                .setDescription(`Hello ${interaction.user}! Thank you for reaching out for ${typeConfig.description.toLowerCase()}.`)
-                .setColor(parseInt(typeConfig.color, 16));
-
-            // Add fields based on form data
-            Object.entries(formData).forEach(([key, value]) => {
-                const question = typeConfig.questions.find(q => q.id === key);
-                if (question && value) {
-                    const displayValue = value.length > 1024 ? value.substring(0, 1021) + '...' : value;
-                    welcomeEmbed.addFields({ 
-                        name: question.label, 
-                        value: displayValue, 
-                        inline: question.style !== 'Paragraph' 
-                    });
-                }
-            });
-        }
+        const subject = formData.subject || 'New Ticket';
+        const details = formData.details || '';
+        const welcomeEmbed = new EmbedBuilder()
+            .setTitle(`🎫 Ticket #${ticket.ticketNumber} - ${subject}`)
+            .setDescription('Ticket created. A team member will assist you here.')
+            .addFields(
+                ...(details ? [{ name: 'Details', value: details.length > 1024 ? details.slice(0, 1021) + '...' : details }] : [])
+            )
+            .setColor(0x0099FF);
 
         welcomeEmbed
             .setFooter({ text: `Ticket created on ${new Date().toLocaleString()}` })
             .setTimestamp();
 
-        // Create action buttons
-        const actionRow1 = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('status_in_progress')
-                    .setLabel('Mark In Progress')
-                    .setStyle(ButtonStyle.Primary)
-                    .setEmoji('🚀'),
-                new ButtonBuilder()
-                    .setCustomId('status_awaiting_client')
-                    .setLabel('Awaiting Client')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏳'),
-                new ButtonBuilder()
-                    .setCustomId('status_completed')
-                    .setLabel('Mark Complete')
-                    .setStyle(ButtonStyle.Success)
-                    .setEmoji('✅')
-            );
-
-        const actionRow2 = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('close_ticket')
-                    .setLabel('Close Ticket')
-                    .setStyle(ButtonStyle.Danger)
-                    .setEmoji('🔒')
-            );
+        // Always only show a Close Ticket button; no status buttons, no extra text
+        const closeRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('close_ticket')
+                .setLabel('Close Ticket')
+                .setStyle(ButtonStyle.Danger)
+                .setEmoji('🔒')
+        );
 
         await ticketChannel.send({
-            content: `${interaction.user}`,
             embeds: [welcomeEmbed],
-            components: [actionRow1, actionRow2]
+            components: [closeRow]
         });
 
-        await ticketChannel.send({
-            content: "I'll review your project details and get back to you with questions and a quote soon. Feel free to add any additional information or ask questions in the meantime!"
-        });
-
-        await interaction.reply({
-            content: `✅ Your ticket has been created: ${ticketChannel}`,
-            flags: 64
-        });
+        await interaction.reply({ content: '✅ Your ticket has been created.', flags: 64 });
 
     } catch (error) {
         console.error('Error creating ticket:', error);
