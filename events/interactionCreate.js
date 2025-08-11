@@ -48,6 +48,8 @@ async function handleButton(interaction) {
     if (interaction.customId.startsWith('create_ticket_')) {
         const ticketType = interaction.customId.replace('create_ticket_', '');
         await handleCreateTicket(interaction, ticketType);
+    } else if (interaction.customId === 'create_ticket') {
+        await handleCreateTicket(interaction, 'website');
     } else if (interaction.customId === 'close_ticket') {
         await handleCloseTicket(interaction);
     } else if (interaction.customId.startsWith('status_')) {
@@ -444,23 +446,15 @@ async function handleSystemSetupModal(interaction) {
 
         embed.setTimestamp();
 
-        const buttons = [];
-        Object.entries(config.ticketTypes).forEach(([key, ticketType]) => {
-            buttons.push(
-                new ButtonBuilder()
-                    .setCustomId(`create_ticket_${key}`)
-                    .setLabel(ticketType.label)
-                    .setStyle(ButtonStyle.Primary)
-                    .setEmoji(ticketType.emoji)
-            );
-        });
+        const button = new ButtonBuilder()
+            .setCustomId('create_ticket')
+            .setLabel('Create Ticket')
+            .setStyle(ButtonStyle.Primary)
+            .setEmoji('📝');
 
-        const rows = [];
-        for (let i = 0; i < buttons.length; i += 5) {
-            rows.push(new ActionRowBuilder().addComponents(buttons.slice(i, i + 5)));
-        }
+        const row = new ActionRowBuilder().addComponents(button);
 
-        await interaction.channel.send({ embeds: [embed], components: rows });
+        await interaction.channel.send({ embeds: [embed], components: [row] });
 
         await interaction.reply({ content: '✅ Ticket system setup saved to database and posted here.', flags: 64 });
     } catch (error) {
