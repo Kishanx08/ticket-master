@@ -254,24 +254,37 @@ async function createTicketChannel(interaction, ticketType = 'website') {
             }))
         });
 
-        // Send welcome message
-        const welcomeEmbed = new EmbedBuilder()
-            .setTitle(`${typeConfig.emoji} Ticket #${ticket.ticketNumber} - ${typeConfig.name}`)
-            .setDescription(`Hello ${interaction.user}! Thank you for reaching out for ${typeConfig.description.toLowerCase()}.`)
-            .setColor(parseInt(typeConfig.color, 16));
+        // Send welcome message (simple for custom type)
+        let welcomeEmbed;
+        if (ticketType === 'custom') {
+            const subject = formData.subject || 'New Ticket';
+            const details = formData.details || '';
+            welcomeEmbed = new EmbedBuilder()
+                .setTitle(`🎫 Ticket #${ticket.ticketNumber} - ${subject}`)
+                .setDescription(`Hello ${interaction.user}. Your ticket has been created.`)
+                .addFields(
+                    ...(details ? [{ name: 'Details', value: details.length > 1024 ? details.slice(0, 1021) + '...' : details }] : [])
+                )
+                .setColor(0x0099FF);
+        } else {
+            welcomeEmbed = new EmbedBuilder()
+                .setTitle(`${typeConfig.emoji} Ticket #${ticket.ticketNumber} - ${typeConfig.name}`)
+                .setDescription(`Hello ${interaction.user}! Thank you for reaching out for ${typeConfig.description.toLowerCase()}.`)
+                .setColor(parseInt(typeConfig.color, 16));
 
-        // Add fields based on form data
-        Object.entries(formData).forEach(([key, value]) => {
-            const question = typeConfig.questions.find(q => q.id === key);
-            if (question && value) {
-                const displayValue = value.length > 1024 ? value.substring(0, 1021) + '...' : value;
-                welcomeEmbed.addFields({ 
-                    name: question.label, 
-                    value: displayValue, 
-                    inline: question.style !== 'Paragraph' 
-                });
-            }
-        });
+            // Add fields based on form data
+            Object.entries(formData).forEach(([key, value]) => {
+                const question = typeConfig.questions.find(q => q.id === key);
+                if (question && value) {
+                    const displayValue = value.length > 1024 ? value.substring(0, 1021) + '...' : value;
+                    welcomeEmbed.addFields({ 
+                        name: question.label, 
+                        value: displayValue, 
+                        inline: question.style !== 'Paragraph' 
+                    });
+                }
+            });
+        }
 
         welcomeEmbed
             .setFooter({ text: `Ticket created on ${new Date().toLocaleString()}` })
