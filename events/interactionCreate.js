@@ -1,6 +1,7 @@
 const { Events, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, ChannelType, PermissionFlagsBits, StringSelectMenuBuilder } = require('discord.js');
 const ticketManager = require('../utils/ticketManager');
 const config = require('../config.json');
+const database = require('../utils/database');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -393,32 +394,33 @@ async function handleConfigureSetupEmbed(interaction) {
 }
 
 async function handleSystemSetupModal(interaction) {
-    const fs = require('fs').promises;
-    const path = require('path');
-
     try {
         const title = interaction.fields.getTextInputValue('title');
         const description = interaction.fields.getTextInputValue('description');
         const color = interaction.fields.getTextInputValue('color');
         const footer = interaction.fields.getTextInputValue('footer');
         const thumbnail = interaction.fields.getTextInputValue('thumbnail');
-        // image intentionally not added in first modal to stay within 5 inputs
 
-        const configPath = path.join(__dirname, '..', 'config.json');
-        const configData = await fs.readFile(configPath, 'utf8');
-        const config = JSON.parse(configData);
+        // Save to MongoDB per guild
+        const guildId = interaction.guild.id;
+        let guildData = await database.getGuild(guildId);
+        if (!guildData) {
+            guildData = await database.saveGuild({ _id: guildId, name: interaction.guild.name });
+        }
+        const newConfig = guildData.config || {};
+        const setupEmbed = newConfig.setupEmbed || {};
+        setupEmbed.title = title;
+        setupEmbed.description = description;
+        setupEmbed.color = color;
+        setupEmbed.footer = setupEmbed.footer || {};
+        setupEmbed.footer.text = footer || '';
+        if (thumbnail) setupEmbed.thumbnail = thumbnail;
+        newConfig.setupEmbed = setupEmbed;
+        guildData.config = newConfig;
+        await database.saveGuild(guildData.toObject ? guildData.toObject() : guildData);
 
-        config.setupEmbed.title = title;
-        config.setupEmbed.description = description;
-        config.setupEmbed.color = color;
-        config.setupEmbed.footer = config.setupEmbed.footer || {};
-        config.setupEmbed.footer.text = footer || '';
-        if (thumbnail) config.setupEmbed.thumbnail = thumbnail;
-
-        await fs.writeFile(configPath, JSON.stringify(config, null, 4));
-
-        // Immediately post the ticket panel in the current channel
-        const setupConfig = config.setupEmbed;
+        // Immediately post the ticket panel in the current channel using saved values
+        const setupConfig = setupEmbed;
 
         const embed = new EmbedBuilder()
             .setTitle(setupConfig.title)
@@ -460,7 +462,7 @@ async function handleSystemSetupModal(interaction) {
 
         await interaction.channel.send({ embeds: [embed], components: rows });
 
-        await interaction.reply({ content: '✅ Ticket system setup saved and posted here.', flags: 64 });
+        await interaction.reply({ content: '✅ Ticket system setup saved to database and posted here.', flags: 64 });
     } catch (error) {
         console.error('Error saving system setup:', error);
         await interaction.reply({ content: '❌ Failed to save. Please try again.', flags: 64 });
