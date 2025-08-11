@@ -3,6 +3,48 @@ const ticketManager = require('../utils/ticketManager');
 const config = require('../config.json');
 const database = require('../utils/database');
 
+function getTypeConfig(ticketType) {
+    if (ticketType === 'custom') {
+        return {
+            id: 'custom',
+            label: 'Create Ticket',
+            name: 'Support',
+            emoji: '🎫',
+            description: 'Provide details for your request',
+            color: '0x0099FF',
+            questions: [
+                {
+                    id: 'subject',
+                    label: 'Brief subject of your request',
+                    placeholder: 'E.g., Unban appeal, Billing question, Bug report',
+                    style: 'Short',
+                    required: true,
+                    maxLength: 100,
+                },
+                {
+                    id: 'details',
+                    label: 'Please describe your request',
+                    placeholder: 'Add as much detail as possible...',
+                    style: 'Paragraph',
+                    required: true,
+                    maxLength: 2000,
+                },
+                {
+                    id: 'contact',
+                    label: 'Preferred contact method (optional)',
+                    placeholder: 'Discord, Email, etc.',
+                    style: 'Short',
+                    required: false,
+                    maxLength: 100,
+                },
+            ],
+        };
+    }
+    const t = config.ticketTypes[ticketType];
+    if (!t) return null;
+    return { ...t, name: t.label };
+}
+
 module.exports = {
     name: Events.InteractionCreate,
     async execute(interaction) {
@@ -49,7 +91,7 @@ async function handleButton(interaction) {
         const ticketType = interaction.customId.replace('create_ticket_', '');
         await handleCreateTicket(interaction, ticketType);
     } else if (interaction.customId === 'create_ticket') {
-        await handleCreateTicket(interaction, 'website');
+        await handleCreateTicket(interaction, 'custom');
     } else if (interaction.customId === 'close_ticket') {
         await handleCloseTicket(interaction);
     } else if (interaction.customId.startsWith('status_')) {
@@ -63,7 +105,7 @@ async function handleCreateTicket(interaction, ticketType = 'website') {
     // REMOVED: Single ticket limitation - users can now create multiple tickets
 
     // Get ticket type configuration
-    const typeConfig = config.ticketTypes[ticketType];
+    const typeConfig = getTypeConfig(ticketType);
     if (!typeConfig) {
         return interaction.reply({
             content: '❌ Invalid ticket type.',
@@ -123,7 +165,7 @@ async function handleModal(interaction) {
 
 async function createTicketChannel(interaction, ticketType = 'website') {
     // Get ticket type configuration
-    const typeConfig = config.ticketTypes[ticketType];
+    const typeConfig = getTypeConfig(ticketType);
     
     // Extract form data based on ticket type
     const formData = {};
