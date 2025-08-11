@@ -29,14 +29,6 @@ function getTypeConfig(ticketType) {
                     required: true,
                     maxLength: 2000,
                 },
-                {
-                    id: 'contact',
-                    label: 'Preferred contact method (optional)',
-                    placeholder: 'Discord, Email, etc.',
-                    style: 'Short',
-                    required: false,
-                    maxLength: 100,
-                },
             ],
         };
     }
@@ -167,6 +159,15 @@ async function createTicketChannel(interaction, ticketType = 'website') {
     // Get ticket type configuration
     const typeConfig = getTypeConfig(ticketType);
     
+    // Ensure the bot has permissions to create channels
+    const me = interaction.guild.members.me;
+    if (!me.permissions.has(PermissionFlagsBits.ManageChannels)) {
+        return interaction.reply({
+            content: '❌ I need the Manage Channels permission to create ticket categories/channels. Please grant Manage Channels to my role and try again.',
+            flags: 64,
+        });
+    }
+
     // Extract form data based on ticket type
     const formData = {};
     typeConfig.questions.forEach(question => {
@@ -185,50 +186,59 @@ async function createTicketChannel(interaction, ticketType = 'website') {
         let category = interaction.guild.channels.cache.find(c => c.name === 'tickets' && c.type === ChannelType.GuildCategory);
         
         if (!category) {
-            category = await interaction.guild.channels.create({
-                name: 'tickets',
-                type: ChannelType.GuildCategory,
-                permissionOverwrites: [
-                    {
-                        id: interaction.guild.roles.everyone.id,
-                        deny: [PermissionFlagsBits.ViewChannel],
-                    },
-                ]
-            });
+            try {
+                category = await interaction.guild.channels.create({
+                    name: 'tickets',
+                    type: ChannelType.GuildCategory,
+                    permissionOverwrites: [
+                        {
+                            id: interaction.guild.roles.everyone.id,
+                            deny: [PermissionFlagsBits.ViewChannel],
+                        },
+                    ]
+                });
+            } catch (err) {
+                return await interaction.reply({ content: '❌ I could not create the tickets category. Make sure I have Manage Channels permission and no channel naming restrictions.', flags: 64 });
+            }
         }
 
         // Create ticket channel
         const ticketNumber = await ticketManager.getNextTicketNumber(interaction.guild.id);
         const channelName = `ticket-${ticketNumber}-${interaction.user.username}`;
 
-        const ticketChannel = await interaction.guild.channels.create({
-            name: channelName,
-            type: ChannelType.GuildText,
-            parent: category.id,
-            permissionOverwrites: [
-                {
-                    id: interaction.guild.roles.everyone.id,
-                    deny: [PermissionFlagsBits.ViewChannel],
-                },
-                {
-                    id: interaction.user.id,
-                    allow: [
-                        PermissionFlagsBits.ViewChannel,
-                        PermissionFlagsBits.SendMessages,
-                        PermissionFlagsBits.ReadMessageHistory,
-                    ],
-                },
-                {
-                    id: interaction.client.user.id,
-                    allow: [
-                        PermissionFlagsBits.ViewChannel,
-                        PermissionFlagsBits.SendMessages,
-                        PermissionFlagsBits.ReadMessageHistory,
-                        PermissionFlagsBits.ManageMessages,
-                    ],
-                },
-            ],
-        });
+        let ticketChannel;
+        try {
+            ticketChannel = await interaction.guild.channels.create({
+                name: channelName,
+                type: ChannelType.GuildText,
+                parent: category.id,
+                permissionOverwrites: [
+                    {
+                        id: interaction.guild.roles.everyone.id,
+                        deny: [PermissionFlagsBits.ViewChannel],
+                    },
+                    {
+                        id: interaction.user.id,
+                        allow: [
+                            PermissionFlagsBits.ViewChannel,
+                            PermissionFlagsBits.SendMessages,
+                            PermissionFlagsBits.ReadMessageHistory,
+                        ],
+                    },
+                    {
+                        id: interaction.client.user.id,
+                        allow: [
+                            PermissionFlagsBits.ViewChannel,
+                            PermissionFlagsBits.SendMessages,
+                            PermissionFlagsBits.ReadMessageHistory,
+                            PermissionFlagsBits.ManageMessages,
+                        ],
+                    },
+                ],
+            });
+        } catch (err) {
+            return await interaction.reply({ content: '❌ I could not create the ticket channel. Please ensure I have Manage Channels and Send Messages permissions.', flags: 64 });
+        }
 
         // Create ticket in database
         const ticket = await ticketManager.createTicket({
