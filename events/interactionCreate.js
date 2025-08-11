@@ -103,6 +103,8 @@ async function handleModal(interaction) {
         await handleConfigureSetupEmbed(interaction);
     } else if (interaction.customId === 'edit_setup_embed_modal') {
         await handleEditSetupEmbedModal(interaction);
+  } else if (interaction.customId === 'system_setup_modal') {
+    await handleSystemSetupModal(interaction);
     } else if (interaction.customId.startsWith('edit_ticket_type_')) {
         await handleEditTicketType(interaction);
     } else if (interaction.customId.startsWith('edit_status_')) {
@@ -387,6 +389,81 @@ async function handleConfigureSetupEmbed(interaction) {
             content: '❌ Failed to update configuration. Please check your inputs and try again.',
             flags: 64
         });
+    }
+}
+
+async function handleSystemSetupModal(interaction) {
+    const fs = require('fs').promises;
+    const path = require('path');
+
+    try {
+        const title = interaction.fields.getTextInputValue('title');
+        const description = interaction.fields.getTextInputValue('description');
+        const color = interaction.fields.getTextInputValue('color');
+        const footer = interaction.fields.getTextInputValue('footer');
+        const thumbnail = interaction.fields.getTextInputValue('thumbnail');
+        // image intentionally not added in first modal to stay within 5 inputs
+
+        const configPath = path.join(__dirname, '..', 'config.json');
+        const configData = await fs.readFile(configPath, 'utf8');
+        const config = JSON.parse(configData);
+
+        config.setupEmbed.title = title;
+        config.setupEmbed.description = description;
+        config.setupEmbed.color = color;
+        config.setupEmbed.footer = config.setupEmbed.footer || {};
+        config.setupEmbed.footer.text = footer || '';
+        if (thumbnail) config.setupEmbed.thumbnail = thumbnail;
+
+        await fs.writeFile(configPath, JSON.stringify(config, null, 4));
+
+        // Immediately post the ticket panel in the current channel
+        const setupConfig = config.setupEmbed;
+
+        const embed = new EmbedBuilder()
+            .setTitle(setupConfig.title)
+            .setDescription(setupConfig.description)
+            .setColor(parseInt(setupConfig.color, 16));
+
+        if (setupConfig.fields && setupConfig.fields.length > 0) {
+            setupConfig.fields.forEach(field => {
+                embed.addFields({ name: field.name, value: field.value, inline: field.inline });
+            });
+        }
+
+        if (setupConfig.footer && setupConfig.footer.text) {
+            const footerOptions = { text: setupConfig.footer.text };
+            if (setupConfig.footer.iconUrl) footerOptions.iconURL = setupConfig.footer.iconUrl;
+            embed.setFooter(footerOptions);
+        }
+
+        if (setupConfig.thumbnail) embed.setThumbnail(setupConfig.thumbnail);
+        if (setupConfig.image) embed.setImage(setupConfig.image);
+
+        embed.setTimestamp();
+
+        const buttons = [];
+        Object.entries(config.ticketTypes).forEach(([key, ticketType]) => {
+            buttons.push(
+                new ButtonBuilder()
+                    .setCustomId(`create_ticket_${key}`)
+                    .setLabel(ticketType.label)
+                    .setStyle(ButtonStyle.Primary)
+                    .setEmoji(ticketType.emoji)
+            );
+        });
+
+        const rows = [];
+        for (let i = 0; i < buttons.length; i += 5) {
+            rows.push(new ActionRowBuilder().addComponents(buttons.slice(i, i + 5)));
+        }
+
+        await interaction.channel.send({ embeds: [embed], components: rows });
+
+        await interaction.reply({ content: '✅ Ticket system setup saved and posted here.', flags: 64 });
+    } catch (error) {
+        console.error('Error saving system setup:', error);
+        await interaction.reply({ content: '❌ Failed to save. Please try again.', flags: 64 });
     }
 }
 
