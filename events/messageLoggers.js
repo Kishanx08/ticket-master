@@ -1,10 +1,14 @@
 const { Events, EmbedBuilder, AuditLogEvent } = require('discord.js');
 const database = require('../utils/database');
 
-async function getLogChannel(guild) {
+async function getLogChannel(guild, typeKey) {
   const guildData = await database.getGuild(guild.id);
-  if (!guildData || !guildData.logChannelId) return null;
-  return guild.channels.cache.get(guildData.logChannelId) || null;
+  if (!guildData) return null;
+  const perTypeId = guildData.logChannels?.[typeKey];
+  const fallbackId = guildData.logChannelId;
+  const targetId = perTypeId || fallbackId;
+  if (!targetId) return null;
+  return guild.channels.cache.get(targetId) || null;
 }
 
 module.exports = {
@@ -16,7 +20,7 @@ module.exports = {
         if (!message.guild || message.author?.bot) return;
         const guildData = await database.getGuild(message.guild.id);
         if (!guildData?.logs?.message) return;
-        const logChannel = await getLogChannel(message.guild);
+        const logChannel = await getLogChannel(message.guild, 'message');
         if (!logChannel) return;
         const embed = new EmbedBuilder()
           .setTitle('Message Deleted')
@@ -36,7 +40,7 @@ module.exports = {
         if (!newMsg.guild || newMsg.author?.bot) return;
         const guildData = await database.getGuild(newMsg.guild.id);
         if (!guildData?.logs?.message) return;
-        const logChannel = await getLogChannel(newMsg.guild);
+        const logChannel = await getLogChannel(newMsg.guild, 'message');
         if (!logChannel) return;
         const before = oldMsg?.content || '(unknown)';
         const after = newMsg?.content || '(unknown)';

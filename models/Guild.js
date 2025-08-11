@@ -64,6 +64,10 @@ const guildSchema = new mongoose.Schema({
   },
   supportRoleId: String,
   logChannelId: String,
+  logChannels: {
+    type: Object,
+    default: {}
+  },
   logs: {
     type: Object,
     default: {

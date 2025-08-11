@@ -7,9 +7,17 @@ module.exports = {
     .setDescription('Configure logging')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommand(sc => sc
-      .setName('channel')
-      .setDescription('Set the log channel')
-      .addChannelOption(o => o.setName('channel').setDescription('Log channel').setRequired(true)))
+      .setName('set')
+      .setDescription('Set which channel receives which type of logs')
+      .addStringOption(o => o.setName('type').setDescription('Type of logs to route').setRequired(true)
+        .addChoices(
+          { name: 'message', value: 'message' },
+          { name: 'voice', value: 'voice' },
+          { name: 'roles', value: 'roles' },
+          { name: 'channels', value: 'channels' },
+          { name: 'members', value: 'members' },
+        ))
+      .addChannelOption(o => o.setName('channel').setDescription('Destination channel for logs').setRequired(true)))
     .addSubcommand(sc => sc
       .setName('toggle')
       .setDescription('Toggle a log category on/off')
@@ -28,15 +36,17 @@ module.exports = {
     const guildId = interaction.guild.id;
     let guildData = await database.getGuild(guildId);
     if (!guildData) {
-      // initialize basic guild record
       guildData = await database.saveGuild({ _id: guildId, name: interaction.guild.name });
     }
 
-    if (interaction.options.getSubcommand() === 'channel') {
+    if (interaction.options.getSubcommand() === 'set') {
+      const type = interaction.options.getString('type');
       const channel = interaction.options.getChannel('channel');
-      guildData.logChannelId = channel.id;
+      const logChannels = { ...(guildData.logChannels || {}) };
+      logChannels[type] = channel.id;
+      guildData.logChannels = logChannels;
       await database.saveGuild(guildData.toObject ? guildData.toObject() : guildData);
-      return interaction.reply({ content: `✅ Log channel set to ${channel}.`, ephemeral: true });
+      return interaction.reply({ content: `✅ ${type} logs will be sent to ${channel}.`, ephemeral: true });
     }
 
     if (interaction.options.getSubcommand() === 'toggle') {
