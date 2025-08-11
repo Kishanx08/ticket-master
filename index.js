@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Collection } = require("discord.js");
+const { Client, GatewayIntentBits, Collection, Partials } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
 const database = require("./utils/database");
@@ -11,7 +11,9 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildVoiceStates,
     ],
+    partials: [Partials.Message, Partials.Channel, Partials.GuildMember],
 });
 
 // Create a collection for commands

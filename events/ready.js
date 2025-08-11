@@ -48,5 +48,14 @@ module.exports = {
                 }
             }
         }
+        // Wire up logger listeners (message, guild, voice)
+        try {
+            const messageLoggers = require('./messageLoggers');
+            const guildLoggers = require('./guildLoggers');
+            const voiceLoggers = require('./voiceLoggers');
+            await messageLoggers.execute(client);
+            await guildLoggers.execute(client);
+            await voiceLoggers.execute(client);
+        } catch (e) {}
     },
 };

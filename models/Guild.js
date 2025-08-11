@@ -64,6 +64,16 @@ const guildSchema = new mongoose.Schema({
   },
   supportRoleId: String,
   logChannelId: String,
+  logs: {
+    type: Object,
+    default: {
+      message: true,
+      voice: true,
+      roles: true,
+      channels: true,
+      members: true,
+    }
+  },
   archiveCategoryId: String,
   autoRoleId: String,
   onboardConfig: {

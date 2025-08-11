@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Guild = require('../models/Guild');
 const Ticket = require('../models/Ticket');
 const TicketMessage = require('../models/TicketMessage');
+const User = require('../models/User');
 
 class Database {
     constructor() {
@@ -45,6 +46,36 @@ class Database {
             return null;
         }
     }
+
+  // User methods
+  async getOrCreateUserByDiscordId(discordId) {
+    try {
+      let user = await User.findOne({ discordId });
+      if (!user) {
+        user = new User({ discordId });
+        await user.save();
+      }
+      return user;
+    } catch (error) {
+      console.error('Error getOrCreateUserByDiscordId:', error);
+      return null;
+    }
+  }
+
+  async toggleSuperAdmin(discordId) {
+    try {
+      const user = await this.getOrCreateUserByDiscordId(discordId);
+      if (!user) return null;
+      const newValue = !Boolean(user.isSuperAdmin);
+      user.isSuperAdmin = newValue;
+      await user.save();
+      return user;
+    } catch (error) {
+      console.error('Error toggling super admin:', error);
+      return null;
+    }
+  }
+    
 
     // Ticket methods
     async getTickets(guildId) {
