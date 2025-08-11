@@ -44,7 +44,10 @@ module.exports = {
         const embed = new EmbedBuilder()
           .setTitle(action)
           .setDescription(`${member.user.tag} (${member.id})`)
-          .addFields({ name: 'Channel', value: channelText })
+          .addFields(
+            { name: 'Channel', value: channelText },
+            { name: 'Time', value: `<t:${Math.floor(Date.now()/1000)}:f>` }
+          )
           .setColor(0x00CED1)
           .setTimestamp();
         await logChannel.send({ embeds: [embed] });
