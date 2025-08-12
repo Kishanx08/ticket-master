@@ -338,6 +338,64 @@ module.exports = {
         });
     },
 
+    async handleView(interaction) {
+        const ticket = await ticketManager.getTicketByChannel(interaction.channel.id);
+        
+        if (!ticket) {
+            return interaction.reply({
+                content: '❌ This is not a ticket channel.',
+                flags: 64
+            });
+        }
+
+        try {
+            // Create the main embed with ticket information
+            const embed = new EmbedBuilder()
+                .setTitle(`🎫 Ticket #${ticket.ticketNumber}: ${ticket.title || 'No Title'}`)
+                .setDescription(ticket.description || 'No description provided')
+                .setColor(0x0099FF)
+                .addFields(
+                    { name: 'Status', value: ticket.status ? `\`${ticket.status}\`` : 'Open', inline: true },
+                    { name: 'Type', value: ticket.ticketType ? `\`${ticket.ticketType}\`` : 'Not specified', inline: true },
+                    { name: 'Created', value: ticket.createdAt ? `<t:${Math.floor(new Date(ticket.createdAt).getTime() / 1000)}:R>` : 'Unknown', inline: true },
+                    { name: 'Created By', value: ticket.userId ? `<@${ticket.userId}>` : 'Unknown', inline: true }
+                )
+                .setTimestamp();
+
+            // Add form responses if they exist
+            if (ticket.responses && ticket.responses.length > 0) {
+                embed.addFields({
+                    name: '\u200B',
+                    value: '**Form Responses**',
+                    inline: false
+                });
+
+                ticket.responses.forEach((response, index) => {
+                    if (response.question && response.answer) {
+                        embed.addFields({
+                            name: response.question,
+                            value: response.answer.length > 1000 
+                                ? response.answer.substring(0, 1000) + '...' 
+                                : response.answer,
+                            inline: false
+                        });
+                    }
+                });
+            }
+
+            await interaction.reply({
+                embeds: [embed],
+                flags: 64
+            });
+        } catch (error) {
+            console.error('Error displaying ticket details:', error);
+            await interaction.reply({
+                content: '❌ Failed to display ticket details. Please try again later.',
+                flags: 64
+            });
+        }
+    },
+
     async handleTranscript(interaction) {
         const ticket = await ticketManager.getTicketByChannel(interaction.channel.id);
         
