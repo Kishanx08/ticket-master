@@ -53,7 +53,11 @@ module.exports = {
         .addSubcommand(subcommand =>
             subcommand
                 .setName('transcript')
-                .setDescription('Generate a transcript of the current ticket')),
+                .setDescription('Generate a transcript of the current ticket'))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('view')
+                .setDescription('View the details of the current ticket')),
 
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
@@ -70,6 +74,8 @@ module.exports = {
             await this.handleStatus(interaction);
         } else if (subcommand === 'transcript') {
             await this.handleTranscript(interaction);
+        } else if (subcommand === 'view') {
+            await this.handleView(interaction);
         }
     },
 
@@ -342,27 +348,22 @@ module.exports = {
             });
         }
 
-        if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
-            return interaction.reply({
-                content: '❌ You need Manage Channels permission to generate transcripts.',
-                flags: 64
-            });
-        }
-
-        await interaction.deferReply({ flags: 64 });
+        await interaction.deferReply();
 
         try {
             const transcriptManager = require('../utils/transcriptManager');
             const transcript = await transcriptManager.generateTranscript(interaction.channel, ticket);
             
-            await interaction.editReply({
-                content: '✅ Transcript generated successfully!',
-                files: [transcript]
+            await interaction.followUp({
+                content: '📄 Here\'s the transcript of this ticket:',
+                files: [transcript],
+                flags: 64
             });
         } catch (error) {
             console.error('Error generating transcript:', error);
-            await interaction.editReply({
-                content: '❌ Failed to generate transcript. Please try again.'
+            await interaction.followUp({
+                content: '❌ Failed to generate transcript. Please try again later.',
+                flags: 64
             });
         }
     }

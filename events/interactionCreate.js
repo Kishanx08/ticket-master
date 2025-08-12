@@ -241,18 +241,26 @@ async function createTicketChannel(interaction, ticketType = 'website') {
             return await interaction.reply({ content: '❌ I could not create the ticket channel. Please ensure I have Manage Channels and Send Messages permissions.', flags: 64 });
         }
 
-        // Create ticket in database
+        // Create ticket in database with all form responses
+        const responses = Object.entries(formData).map(([key, value]) => ({
+            questionId: key,
+            question: typeConfig.questions.find(q => q.id === key)?.label || key,
+            answer: value,
+            required: typeConfig.questions.find(q => q.id === key)?.required || false
+        }));
+
         const ticket = await ticketManager.createTicket({
             guildId: interaction.guild.id,
             userId: interaction.user.id,
             channelId: ticketChannel.id,
             ticketType: ticketType,
-            title: `${typeConfig.name} Request`,
-            description: `${typeConfig.description} ticket created by ${interaction.user.tag}`,
-            responses: Object.entries(formData).map(([key, value]) => ({
-                question: typeConfig.questions.find(q => q.id === key)?.label || key,
-                answer: value
-            }))
+            title: formData.subject || `${typeConfig.name} Request`,
+            description: formData.details || typeConfig.description,
+            status: 'open',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            createdBy: interaction.user.id,
+            responses: responses
         });
 
         // Send welcome message (simple for custom type)
