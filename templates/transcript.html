@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transcript for Ticket #${ticket.id}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Whitney:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background-primary: #36393f;
+      --background-secondary: #2f3136;
+      --background-tertiary: #202225;
+      --text-normal: #dcddde;
+      --text-muted: #72767d;
+      --brand: #5865f2;
+      --brand-hover: #4752c4;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: var(--background-primary);
+      color: var(--text-normal);
+      line-height: 1.5;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background-color: var(--background-secondary);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .header {
+      background-color: var(--background-tertiary);
+      padding: 24px;
+      border-bottom: 1px solid rgba(79, 84, 92, 0.48);
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .ticket-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .meta-item {
+      font-size: 14px;
+    }
+    
+    .meta-label {
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    
+    .meta-value {
+      color: var(--text-normal);
+      word-break: break-word;
+    }
+    
+    .messages {
+      padding: 20px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    
+    .message {
+      margin-bottom: 20px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(79, 84, 92, 0.24);
+    }
+    
+    .message:last-child {
+      border-bottom: none;
+    }
+    
+    .message-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 12px;
+      background-color: #202225;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: white;
+      font-size: 16px;
+    }
+    
+    .message-author {
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    
+    .bot-tag {
+      background-color: #5865f2;
+      color: white;
+      font-size: 10px;
+      font-weight: 500;
+      padding: 1px 4px;
+      border-radius: 3px;
+      margin-left: 4px;
+      vertical-align: middle;
+      line-height: 1.4;
+    }
+    
+    .message-timestamp {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .message-content {
+      margin-left: 52px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    
+    .message-content a {
+      color: #00b0f4;
+      text-decoration: none;
+    }
+    
+    .message-content a:hover {
+      text-decoration: underline;
+    }
+    
+    .message-content code {
+      font-family: 'Consolas', 'Monaco', monospace;
+      background-color: rgba(79, 84, 92, 0.48);
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 85%;
+    }
+    
+    .message-content pre {
+      background-color: rgba(32, 34, 37, 0.6);
+      border-radius: 4px;
+      padding: 8px;
+      margin: 4px 0;
+      overflow-x: auto;
+    }
+    
+    .message-content pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+      font-size: 100%;
+    }
+    
+    .message-content blockquote {
+      margin: 4px 0;
+      padding: 0 16px;
+      border-left: 4px solid #4f545c;
+      color: #b9bbbe;
+    }
+    
+    .attachment {
+      margin-top: 8px;
+      max-width: 100%;
+    }
+    
+    .attachment a {
+      display: inline-block;
+      margin-top: 4px;
+      color: #00b0f4;
+    }
+    
+    .attachment img {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    
+    .embed {
+      margin-top: 8px;
+      max-width: 520px;
+      border-left: 4px solid #4f545c;
+      background-color: #2f3136;
+      border-radius: 0 4px 4px 0;
+      padding: 8px 12px 4px 12px;
+      font-size: 14px;
+    }
+    
+    .embed-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    
+    .embed-description {
+      margin-bottom: 8px;
+      color: var(--text-normal);
+    }
+    
+    .embed-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .embed-field {
+      flex: 1;
+    }
+    
+    .embed-field.inline {
+      flex: 0 1 auto;
+      min-width: 150px;
+    }
+    
+    .embed-field-name {
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    
+    .embed-field-value {
+      color: var(--text-normal);
+    }
+    
+    .embed-footer {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+    
+    .embed-footer img {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    
+    .embed-thumbnail {
+      float: right;
+      margin-left: 16px;
+      margin-bottom: 16px;
+      max-width: 80px;
+      max-height: 80px;
+      border-radius: 3px;
+    }
+    
+    .embed-thumbnail img {
+      max-width: 100%;
+      max-height: 80px;
+      border-radius: 3px;
+    }
+    
+    .embed-image {
+      margin-top: 8px;
+      max-width: 100%;
+    }
+    
+    .embed-image img {
+      max-width: 100%;
+      border-radius: 3px;
+    }
+    
+    .footer {
+      padding: 16px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      border-top: 1px solid rgba(79, 84, 92, 0.24);
+    }
+    
+    @media (max-width: 768px) {
+      .ticket-meta {
+        grid-template-columns: 1fr;
+      }
+      
+      .message-content {
+        margin-left: 0;
+        padding-left: 52px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Ticket #${ticket.id}: ${ticket.title}</h1>
+      <div class="ticket-meta">
+        <div class="meta-item">
+          <div class="meta-label">Status</div>
+          <div class="meta-value">${ticket.status}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Priority</div>
+          <div class="meta-value">${ticket.priority}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Category</div>
+          <div class="meta-value">${ticket.category}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Created By</div>
+          <div class="meta-value">${ticket.creator.username}#${ticket.creator.discriminator}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Created At</div>
+          <div class="meta-value">${ticket.createdAt}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Closed At</div>
+          <div class="meta-value">${ticket.closedAt}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="messages" id="messages">
+      ${ticket.messages.map(msg => `
+        <div class="message" id="message-${msg.id}">
+          <div class="message-header">
+            <div class="message-avatar" style="background-color: #${msg.author.id.toString(16).substring(0, 6)}">
+              ${msg.author.username.charAt(0).toUpperCase()}
+            </div>
+            <span class="message-author">${msg.author.username}</span>
+            ${msg.author.bot ? '<span class="bot-tag">BOT</span>' : ''}
+            <span class="message-timestamp">${msg.timestamp}</span>
+          </div>
+          <div class="message-content">
+            ${msg.content}
+            
+            ${msg.attachments.map(attach => `
+              <div class="attachment">
+                ${attach.type.startsWith('image/') 
+                  ? `<a href="${attach.url}" target="_blank"><img src="${attach.url}" alt="${attach.name}"></a>`
+                  : `<a href="${attach.url}" target="_blank">📎 ${attach.name} (${attach.size})</a>`
+                }
+              </div>
+            `).join('')}
+            
+            ${msg.embeds.map(embed => `
+              <div class="embed" style="${embed.color ? `border-color: ${embed.color};` : ''}">
+                ${embed.title ? `<div class="embed-title">${embed.title}</div>` : ''}
+                ${embed.description ? `<div class="embed-description">${embed.description}</div>` : ''}
+                
+                ${embed.thumbnail ? `
+                  <div class="embed-thumbnail">
+                    <img src="${embed.thumbnail.url}" alt="Thumbnail">
+                  </div>
+                ` : ''}
+                
+                ${embed.fields && embed.fields.length > 0 ? `
+                  <div class="embed-fields">
+                    ${embed.fields.map(field => `
+                      <div class="embed-field${field.inline ? ' inline' : ''}">
+                        <div class="embed-field-name">${field.name}</div>
+                        <div class="embed-field-value">${field.value}</div>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : ''}
+                
+                ${embed.image ? `
+                  <div class="embed-image">
+                    <img src="${embed.image.url}" alt="Embedded image">
+                  </div>
+                ` : ''}
+                
+                ${embed.footer ? `
+                  <div class="embed-footer">
+                    ${embed.footer.icon_url ? `<img src="${embed.footer.icon_url}" alt="">` : ''}
+                    ${embed.footer.text}
+                  </div>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    
+    <div class="footer">
+      Transcript generated on ${new Date().toLocaleString()} • ${ticket.messages.length} messages
+    </div>
+  </div>
+  
+  <script>
+    // Auto-scroll to bottom of messages
+    const messages = document.getElementById('messages');
+    messages.scrollTop = messages.scrollHeight;
+    
+    // Handle image clicks to open in new tab
+    document.addEventListener('click', (e) => {
+      if (e.target.tagName === 'IMG' && e.target.closest('.message-content')) {
+        window.open(e.target.src, '_blank');
+      }
+    });
+  </script>
+</body>
+</html>
