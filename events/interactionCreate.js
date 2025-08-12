@@ -1,6 +1,7 @@
 const { Events, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, ChannelType, PermissionFlagsBits, StringSelectMenuBuilder } = require('discord.js');
 const ticketManager = require('../utils/ticketManager');
-const config = require('../config.json');
+const transcriptManager = require('../utils/transcriptManager');
+const config = require('../config.json'); 
 const database = require('../utils/database');
 
 function getTypeConfig(ticketType) {
@@ -16,7 +17,7 @@ function getTypeConfig(ticketType) {
                 {
                     id: 'subject',
                     label: 'Brief subject of your request',
-                    placeholder: 'E.g., Unban appeal, Billing question, Bug report',
+                    placeholder: 'E.g., Unban appeal, Whitelist request, Bug report',
                     style: 'Short',
                     required: true,
                     maxLength: 100,
@@ -312,24 +313,80 @@ async function handleCloseTicket(interaction) {
         });
     }
 
+    // Generate transcript and DM to participants. If any DM fails, do not delete channel.
+    let transcriptError = null;
+    let sentTo = [];
+    let failedFor = [];
+    try {
+        const attachment = await transcriptManager.generateTranscript(interaction.channel, ticket);
+
+        // Collect participants: ticket owner + all non-bot users with explicit overwrites
+        const participants = new Set([ticket.userId]);
+        try {
+            const overwrites = interaction.channel.permissionOverwrites.cache;
+            overwrites.forEach(ow => {
+                if (ow.type === 1) {
+                    participants.add(ow.id);
+                }
+            });
+        } catch {}
+
+        const uniqueIds = Array.from(participants);
+        await Promise.all(uniqueIds.map(async (userId) => {
+            try {
+                const user = await interaction.client.users.fetch(userId);
+                if (!user.bot) {
+                    await user.send({ content: `📄 Transcript for your ticket #${ticket.ticketNumber}`, files: [attachment] });
+                    sentTo.push(user);
+                }
+            } catch (e) {
+                failedFor.push(userId);
+            }
+        }));
+    } catch (err) {
+        transcriptError = err;
+        console.error('Transcript generation/DM error:', err);
+    }
+
     await ticketManager.closeTicket(ticket._id, interaction.user.id);
+
+    const sentMentions = sentTo.map(u => `<@${u.id}>`).join(', ') || 'None';
+    const failedMentions = failedFor.map(id => `<@${id}>`).join(', ') || 'None';
 
     const embed = new EmbedBuilder()
         .setTitle('🔒 Ticket Closed')
-        .setDescription(`This ticket has been closed by ${interaction.user}.\n\nChannel will be deleted in 10 seconds.`)
         .setColor(0xFF0000)
         .setTimestamp();
 
+    if (transcriptError) {
+        embed.setDescription('Transcript could not be generated or sent. The channel will remain open for now.');
+    } else {
+        embed.setDescription('Transcript dispatch complete.');
+        embed.addFields(
+            { name: 'Sent to', value: sentMentions, inline: false },
+            { name: 'Failed for', value: failedMentions, inline: false }
+        );
+    }
+
+    // Decide deletion policy
+    const shouldDelete = !transcriptError && failedFor.length === 0;
+    if (shouldDelete) {
+        embed.addFields({ name: 'Next', value: 'Channel will be deleted in 10 seconds.' });
+    } else {
+        embed.addFields({ name: 'Next', value: 'Channel will NOT be deleted automatically.' });
+    }
+
     await interaction.reply({ embeds: [embed] });
 
-    // Delete channel after 10 seconds
-    setTimeout(async () => {
-        try {
-            await interaction.channel.delete();
-        } catch (error) {
-            console.error('Error deleting ticket channel:', error);
-        }
-    }, 10000);
+    if (shouldDelete) {
+        setTimeout(async () => {
+            try {
+                await interaction.channel.delete();
+            } catch (error) {
+                console.error('Error deleting ticket channel:', error);
+            }
+        }, 10000);
+    }
 }
 
 async function handleStatusChange(interaction) {
