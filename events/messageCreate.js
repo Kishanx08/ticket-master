@@ -1,7 +1,7 @@
 const { Events, PermissionFlagsBits } = require('discord.js');
 const database = require('../utils/database');
 
-const PREFIX = '$';
+const PREFIX = '!';
 
 module.exports = {
   name: Events.MessageCreate,
