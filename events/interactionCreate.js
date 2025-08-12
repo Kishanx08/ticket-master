@@ -313,25 +313,39 @@ async function handleCloseTicket(interaction) {
         });
     }
 
-    // Generate transcript and DM to participants. If any DM fails, do not delete channel.
+    // Generate transcript and DM to users who sent a message in the ticket channel (excluding bots)
     let transcriptError = null;
     let sentTo = [];
     let failedFor = [];
     try {
         const attachment = await transcriptManager.generateTranscript(interaction.channel, ticket);
 
-        // Collect participants: ticket owner + all non-bot users with explicit overwrites
-        const participants = new Set([ticket.userId]);
-        try {
-            const overwrites = interaction.channel.permissionOverwrites.cache;
-            overwrites.forEach(ow => {
-                if (ow.type === 1) {
-                    participants.add(ow.id);
+        // Fetch all messages in the channel and collect unique user IDs who sent a message
+        let userIds = new Set();
+        let lastId;
+        while (true) {
+            const options = { limit: 100 };
+            if (lastId) options.before = lastId;
+            const messages = await interaction.channel.messages.fetch(options);
+            if (messages.size === 0) break;
+            messages.forEach(msg => {
+                if (!msg.author.bot) {
+                    userIds.add(msg.author.id);
                 }
             });
-        } catch {}
+            lastId = messages.last().id;
+            if (messages.size < 100) break;
+        }
 
-        const uniqueIds = Array.from(participants);
+        // Always include ticket owner if not a bot
+        if (!userIds.has(ticket.userId)) {
+            try {
+                const user = await interaction.client.users.fetch(ticket.userId);
+                if (!user.bot) userIds.add(ticket.userId);
+            } catch {}
+        }
+
+        const uniqueIds = Array.from(userIds);
         await Promise.all(uniqueIds.map(async (userId) => {
             try {
                 const user = await interaction.client.users.fetch(userId);
