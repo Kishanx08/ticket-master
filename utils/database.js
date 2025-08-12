@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
-const Guild = require('../models/Guild');
-const Ticket = require('../models/Ticket');
-const TicketMessage = require('../models/TicketMessage');
-const User = require('../models/User');
+const Guild = require('../src/models/Guild');
+const Ticket = require('../src/models/Ticket');
+const TicketMessage = require('../src/models/TicketMessage');
+const User = require('../src/models/User');
 
 class Database {
     constructor() {
