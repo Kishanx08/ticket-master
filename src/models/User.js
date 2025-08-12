@@ -58,6 +58,7 @@ userSchema.index({ 'blacklisted.isBlacklisted': 1 });
 userSchema.index({ 'blacklisted.expiresAt': 1 });
 
 // Static method to find or create a user
+exists
 userSchema.statics.findOrCreate = async function(discordUser) {
   let user = await this.findById(discordUser.id);
   
