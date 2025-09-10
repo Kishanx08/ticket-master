@@ -1305,6 +1305,7 @@ async function handleCompleteReminder(interaction, customId) {
     
     try {
         const reminder = await database.getReminder(reminderId);
+        
         if (!reminder) {
             return interaction.reply({
                 content: '❌ Reminder not found.',

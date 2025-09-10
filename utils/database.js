@@ -220,12 +220,14 @@ class Database {
             // Try to find by shortId first (convert to number if it's a string), then by ObjectId
             let reminder;
             const shortIdNum = parseInt(reminderId);
+            
             if (!isNaN(shortIdNum)) {
                 reminder = await Reminder.findOne({ shortId: shortIdNum });
             }
             if (!reminder) {
                 reminder = await Reminder.findById(reminderId);
             }
+            
             return reminder;
         } catch (error) {
             console.error('Error getting reminder:', error);

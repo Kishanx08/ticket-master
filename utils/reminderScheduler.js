@@ -133,7 +133,7 @@ class ReminderScheduler {
                 }
             )
             .setFooter({ 
-                text: `Reminder ID: ${reminder.shortId}`,
+                text: `Reminder ID: ${reminder.shortId || reminder._id}`,
                 iconURL: user.displayAvatarURL()
             })
             .setTimestamp();
@@ -160,22 +160,25 @@ class ReminderScheduler {
     }
 
     createReminderButtons(reminder) {
+        // Use shortId if available, otherwise fall back to _id
+        const buttonId = reminder.shortId || reminder._id;
+        
         return new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
-                    .setCustomId(`reminder_complete_${reminder.shortId}`)
+                    .setCustomId(`reminder_complete_${buttonId}`)
                     .setLabel('✅ Complete')
                     .setStyle(ButtonStyle.Success),
                 new ButtonBuilder()
-                    .setCustomId(`reminder_snooze_${reminder.shortId}`)
+                    .setCustomId(`reminder_snooze_${buttonId}`)
                     .setLabel('😴 Snooze 15m')
                     .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
-                    .setCustomId(`reminder_snooze_1h_${reminder.shortId}`)
+                    .setCustomId(`reminder_snooze_1h_${buttonId}`)
                     .setLabel('😴 Snooze 1h')
                     .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
-                    .setCustomId(`reminder_repeat_${reminder.shortId}`)
+                    .setCustomId(`reminder_repeat_${buttonId}`)
                     .setLabel('🔄 Repeat')
                     .setStyle(ButtonStyle.Primary)
             );
