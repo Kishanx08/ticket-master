@@ -100,6 +100,17 @@ module.exports = {
                     ].join('\n'),
                     inline: true
                 },
+                // Reminder ID Format
+                {
+                    name: '🆔 Reminder IDs',
+                    value: [
+                        'Reminder IDs are 4-digit numbers (1000-9999)',
+                        'Easy to remember and type',
+                        'Use in commands: `/reminder delete 1234`',
+                        'Shown in all reminder embeds and lists'
+                    ].join('\n'),
+                    inline: true
+                },
                 // Permission Requirements
                 {
                     name: '🔒 Required Permissions',

@@ -183,9 +183,30 @@ class Database {
         }
     }
 
+    // Generate human-readable short ID (3-4 digits)
+    generateShortId() {
+        // Generate a random number between 1000-9999 (4 digits)
+        // This makes it easy to remember and type
+        const min = 1000;
+        const max = 9999;
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     // Reminder methods
     async createReminder(reminderData) {
         try {
+            // Generate unique short ID
+            let shortId;
+            let attempts = 0;
+            do {
+                shortId = this.generateShortId();
+                attempts++;
+                if (attempts > 10) {
+                    throw new Error('Failed to generate unique short ID');
+                }
+            } while (await Reminder.findOne({ shortId }));
+
+            reminderData.shortId = shortId;
             const reminder = new Reminder(reminderData);
             return await reminder.save();
         } catch (error) {
@@ -196,9 +217,31 @@ class Database {
 
     async getReminder(reminderId) {
         try {
-            return await Reminder.findById(reminderId);
+            // Try to find by shortId first (convert to number if it's a string), then by ObjectId
+            let reminder;
+            const shortIdNum = parseInt(reminderId);
+            if (!isNaN(shortIdNum)) {
+                reminder = await Reminder.findOne({ shortId: shortIdNum });
+            }
+            if (!reminder) {
+                reminder = await Reminder.findById(reminderId);
+            }
+            return reminder;
         } catch (error) {
             console.error('Error getting reminder:', error);
+            return null;
+        }
+    }
+
+    async getReminderByShortId(shortId) {
+        try {
+            const shortIdNum = parseInt(shortId);
+            if (isNaN(shortIdNum)) {
+                return null;
+            }
+            return await Reminder.findOne({ shortId: shortIdNum });
+        } catch (error) {
+            console.error('Error getting reminder by short ID:', error);
             return null;
         }
     }

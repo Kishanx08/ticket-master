@@ -94,8 +94,7 @@ async function handleButton(interaction) {
         await handleEditSetupEmbedButton(interaction);
     } else if (interaction.customId.startsWith('reminder_')) {
         // Handle reminder button interactions
-        const reminderScheduler = new ReminderScheduler(interaction.client);
-        await reminderScheduler.handleButtonInteraction(interaction);
+        await handleReminderButton(interaction);
     }
 }
 
@@ -1285,6 +1284,172 @@ async function handleEditColor(interaction) {
         await interaction.reply({
             content: '❌ Failed to update color. Please try again.',
             flags: 64
+        });
+    }
+}
+
+async function handleReminderButton(interaction) {
+    const customId = interaction.customId;
+    
+    if (customId.startsWith('reminder_complete_')) {
+        await handleCompleteReminder(interaction, customId);
+    } else if (customId.startsWith('reminder_snooze_')) {
+        await handleSnoozeReminder(interaction, customId);
+    } else if (customId.startsWith('reminder_repeat_')) {
+        await handleRepeatReminder(interaction, customId);
+    }
+}
+
+async function handleCompleteReminder(interaction, customId) {
+    const reminderId = customId.replace('reminder_complete_', '');
+    
+    try {
+        const reminder = await database.getReminder(reminderId);
+        if (!reminder) {
+            return interaction.reply({
+                content: '❌ Reminder not found.',
+                ephemeral: true
+            });
+        }
+
+        if (reminder.userId !== interaction.user.id) {
+            return interaction.reply({
+                content: '❌ You can only complete your own reminders.',
+                ephemeral: true
+            });
+        }
+
+        await database.markReminderCompleted(reminder._id);
+
+        const embed = new EmbedBuilder()
+            .setTitle('✅ Reminder Completed')
+            .setDescription('This reminder has been marked as completed and removed.')
+            .setColor(0x00FF00)
+            .setTimestamp();
+
+        await interaction.reply({
+            embeds: [embed],
+            ephemeral: true
+        });
+
+    } catch (error) {
+        console.error('Error handling complete reminder:', error);
+        await interaction.reply({
+            content: '❌ An error occurred while completing the reminder.',
+            ephemeral: true
+        });
+    }
+}
+
+async function handleSnoozeReminder(interaction, customId) {
+    const reminderId = customId.replace('reminder_snooze_', '').replace('_1h', '');
+    const isOneHour = customId.includes('_1h');
+    const snoozeMinutes = isOneHour ? 60 : 15;
+    
+    try {
+        const reminder = await database.getReminder(reminderId);
+        if (!reminder) {
+            return interaction.reply({
+                content: '❌ Reminder not found.',
+                ephemeral: true
+            });
+        }
+
+        if (reminder.userId !== interaction.user.id) {
+            return interaction.reply({
+                content: '❌ You can only snooze your own reminders.',
+                ephemeral: true
+            });
+        }
+
+        const newTriggerTime = new Date(Date.now() + snoozeMinutes * 60 * 1000);
+        await database.snoozeReminder(reminder._id, newTriggerTime);
+
+        const embed = new EmbedBuilder()
+            .setTitle('😴 Reminder Snoozed')
+            .setDescription(`This reminder has been snoozed for ${snoozeMinutes} minutes.`)
+            .setColor(0xFFA500)
+            .setTimestamp();
+
+        await interaction.reply({
+            embeds: [embed],
+            ephemeral: true
+        });
+
+    } catch (error) {
+        console.error('Error handling snooze reminder:', error);
+        await interaction.reply({
+            content: '❌ An error occurred while snoozing the reminder.',
+            ephemeral: true
+        });
+    }
+}
+
+async function handleRepeatReminder(interaction, customId) {
+    const reminderId = customId.replace('reminder_repeat_', '');
+    
+    try {
+        const reminder = await database.getReminder(reminderId);
+        if (!reminder) {
+            return interaction.reply({
+                content: '❌ Reminder not found.',
+                ephemeral: true
+            });
+        }
+
+        if (reminder.userId !== interaction.user.id) {
+            return interaction.reply({
+                content: '❌ You can only repeat your own reminders.',
+                ephemeral: true
+            });
+        }
+
+        // Create a new reminder with the same settings but new trigger time
+        const now = new Date();
+        let nextTriggerTime;
+
+        if (reminder.isRepeating) {
+            // Use the same repeat logic
+            switch (reminder.repeatInterval) {
+                case 'daily':
+                    nextTriggerTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                    break;
+                case 'weekly':
+                    nextTriggerTime = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                    break;
+                case 'monthly':
+                    nextTriggerTime = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes());
+                    break;
+                case 'yearly':
+                    nextTriggerTime = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+                    break;
+                default:
+                    nextTriggerTime = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Default to daily
+            }
+        } else {
+            // If not repeating, create a daily repeat
+            nextTriggerTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        }
+
+        await database.createRepeatingReminder(reminder._id, nextTriggerTime);
+        await database.markReminderCompleted(reminder._id);
+
+        const embed = new EmbedBuilder()
+            .setTitle('🔄 Reminder Repeated')
+            .setDescription('This reminder has been repeated and will trigger again.')
+            .setColor(0x0099FF)
+            .setTimestamp();
+
+        await interaction.reply({
+            embeds: [embed],
+            ephemeral: true
+        });
+
+    } catch (error) {
+        console.error('Error handling repeat reminder:', error);
+        await interaction.reply({
+            content: '❌ An error occurred while repeating the reminder.',
+            ephemeral: true
         });
     }
 }

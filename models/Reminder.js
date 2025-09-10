@@ -64,6 +64,12 @@ const reminderSchema = new mongoose.Schema({
     ref: 'Reminder',
     default: null 
   },
+  shortId: {
+    type: Number,
+    required: true,
+    unique: true,
+    index: true
+  },
   createdAt: { 
     type: Date, 
     default: Date.now 

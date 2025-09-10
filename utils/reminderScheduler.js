@@ -56,7 +56,7 @@ class ReminderScheduler {
 
             // Create the reminder embed
             const embed = this.createReminderEmbed(reminder, user);
-            const buttons = this.createReminderButtons(reminder._id);
+            const buttons = this.createReminderButtons(reminder);
 
             // Try to send DM first
             let sentSuccessfully = false;
@@ -133,7 +133,7 @@ class ReminderScheduler {
                 }
             )
             .setFooter({ 
-                text: `Reminder ID: ${reminder._id}`,
+                text: `Reminder ID: ${reminder.shortId}`,
                 iconURL: user.displayAvatarURL()
             })
             .setTimestamp();
@@ -159,23 +159,23 @@ class ReminderScheduler {
         return embed;
     }
 
-    createReminderButtons(reminderId) {
+    createReminderButtons(reminder) {
         return new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
-                    .setCustomId(`reminder_complete_${reminderId}`)
+                    .setCustomId(`reminder_complete_${reminder.shortId}`)
                     .setLabel('✅ Complete')
                     .setStyle(ButtonStyle.Success),
                 new ButtonBuilder()
-                    .setCustomId(`reminder_snooze_${reminderId}`)
+                    .setCustomId(`reminder_snooze_${reminder.shortId}`)
                     .setLabel('😴 Snooze 15m')
                     .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
-                    .setCustomId(`reminder_snooze_1h_${reminderId}`)
+                    .setCustomId(`reminder_snooze_1h_${reminder.shortId}`)
                     .setLabel('😴 Snooze 1h')
                     .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
-                    .setCustomId(`reminder_repeat_${reminderId}`)
+                    .setCustomId(`reminder_repeat_${reminder.shortId}`)
                     .setLabel('🔄 Repeat')
                     .setStyle(ButtonStyle.Primary)
             );

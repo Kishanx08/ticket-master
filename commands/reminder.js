@@ -224,7 +224,7 @@ module.exports = {
                 },
                 {
                     name: 'Reminder ID',
-                    value: `\`${reminder._id}\``,
+                    value: `\`${reminder.shortId}\``,
                     inline: false
                 }
             );
@@ -316,7 +316,7 @@ module.exports = {
             
             let value = `**Time:** ${timeString}\n`;
             value += `**Channel:** <#${reminder.channelId}>\n`;
-            value += `**ID:** \`${reminder._id}\``;
+            value += `**ID:** \`${reminder.shortId}\``;
             
             if (reminder.isRepeating) {
                 value += `\n**Repeats:** ${reminder.repeatInterval === 'custom' ? reminder.customRepeatPattern : reminder.repeatInterval}`;
@@ -474,7 +474,7 @@ module.exports = {
                 },
                 {
                     name: 'Reminder ID',
-                    value: `\`${updatedReminder._id}\``,
+                    value: `\`${updatedReminder.shortId}\``,
                     inline: false
                 }
             )
@@ -542,7 +542,7 @@ module.exports = {
                 },
                 {
                     name: 'Reminder ID',
-                    value: `\`${reminder._id}\``,
+                    value: `\`${reminder.shortId}\``,
                     inline: true
                 }
             );
