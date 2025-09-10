@@ -3,6 +3,7 @@ const Guild = require('../models/Guild');
 const Ticket = require('../models/Ticket');
 const TicketMessage = require('../models/TicketMessage');
 const User = require('../models/User');
+const Reminder = require('../models/Reminder');
 
 class Database {
     constructor() {
@@ -179,6 +180,156 @@ class Database {
         } catch (error) {
             console.error('Error getting ticket messages:', error);
             return [];
+        }
+    }
+
+    // Reminder methods
+    async createReminder(reminderData) {
+        try {
+            const reminder = new Reminder(reminderData);
+            return await reminder.save();
+        } catch (error) {
+            console.error('Error creating reminder:', error);
+            return null;
+        }
+    }
+
+    async getReminder(reminderId) {
+        try {
+            return await Reminder.findById(reminderId);
+        } catch (error) {
+            console.error('Error getting reminder:', error);
+            return null;
+        }
+    }
+
+    async getUserReminders(userId, guildId = null) {
+        try {
+            const query = { userId, isActive: true };
+            if (guildId) query.guildId = guildId;
+            
+            return await Reminder.find(query)
+                .sort({ triggerTime: 1 })
+                .lean();
+        } catch (error) {
+            console.error('Error getting user reminders:', error);
+            return [];
+        }
+    }
+
+    async getActiveReminders() {
+        try {
+            return await Reminder.find({ 
+                isActive: true, 
+                triggerTime: { $lte: new Date() } 
+            }).lean();
+        } catch (error) {
+            console.error('Error getting active reminders:', error);
+            return [];
+        }
+    }
+
+    async getUpcomingReminders(minutes = 5) {
+        try {
+            const now = new Date();
+            const future = new Date(now.getTime() + (minutes * 60 * 1000));
+            
+            return await Reminder.find({
+                isActive: true,
+                triggerTime: { $gte: now, $lte: future }
+            }).lean();
+        } catch (error) {
+            console.error('Error getting upcoming reminders:', error);
+            return [];
+        }
+    }
+
+    async updateReminder(reminderId, updates) {
+        try {
+            return await Reminder.findByIdAndUpdate(
+                reminderId,
+                { ...updates, updatedAt: new Date() },
+                { new: true }
+            );
+        } catch (error) {
+            console.error('Error updating reminder:', error);
+            return null;
+        }
+    }
+
+    async deleteReminder(reminderId) {
+        try {
+            return await Reminder.findByIdAndDelete(reminderId);
+        } catch (error) {
+            console.error('Error deleting reminder:', error);
+            return null;
+        }
+    }
+
+    async markReminderCompleted(reminderId) {
+        try {
+            return await Reminder.findByIdAndDelete(reminderId);
+        } catch (error) {
+            console.error('Error marking reminder as completed:', error);
+            return null;
+        }
+    }
+
+    async snoozeReminder(reminderId, newTriggerTime) {
+        try {
+            return await Reminder.findByIdAndUpdate(
+                reminderId,
+                { 
+                    triggerTime: newTriggerTime,
+                    isSnoozed: true,
+                    snoozeCount: { $inc: 1 },
+                    updatedAt: new Date()
+                },
+                { new: true }
+            );
+        } catch (error) {
+            console.error('Error snoozing reminder:', error);
+            return null;
+        }
+    }
+
+    async createRepeatingReminder(originalReminderId, newTriggerTime) {
+        try {
+            const originalReminder = await Reminder.findById(originalReminderId);
+            if (!originalReminder) return null;
+
+            const newReminder = new Reminder({
+                ...originalReminder.toObject(),
+                _id: new mongoose.Types.ObjectId(),
+                triggerTime: newTriggerTime,
+                isSnoozed: false,
+                parentReminderId: originalReminderId,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
+
+            return await newReminder.save();
+        } catch (error) {
+            console.error('Error creating repeating reminder:', error);
+            return null;
+        }
+    }
+
+    async cleanupOldReminders() {
+        try {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            const result = await Reminder.deleteMany({
+                isActive: false,
+                updatedAt: { $lt: thirtyDaysAgo }
+            });
+            
+            console.log(`Cleaned up ${result.deletedCount} old reminders`);
+            return result.deletedCount;
+        } catch (error) {
+            console.error('Error cleaning up old reminders:', error);
+            return 0;
         }
     }
 

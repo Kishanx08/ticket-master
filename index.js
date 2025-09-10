@@ -2,6 +2,7 @@ const { Client, GatewayIntentBits, Collection, Partials } = require("discord.js"
 const fs = require("fs");
 const path = require("path");
 const database = require("./utils/database");
+const ReminderScheduler = require("./utils/reminderScheduler");
 require("./server.js");
 
 // Create a new client instance
@@ -18,6 +19,9 @@ const client = new Client({
 
 // Create a collection for commands
 client.commands = new Collection();
+
+// Initialize reminder scheduler
+const reminderScheduler = new ReminderScheduler(client);
 
 // Load commands
 const commandsPath = path.join(__dirname, "commands");
@@ -64,6 +68,10 @@ async function initializeBot() {
         const token = process.env.DISCORD_TOKEN || "your_bot_token_here";
         await client.login(token);
         console.log("Bot logged in successfully");
+
+        // Start reminder scheduler
+        reminderScheduler.start();
+        console.log("Reminder scheduler started");
     } catch (error) {
         console.error("Failed to initialize bot:", error);
         process.exit(1);

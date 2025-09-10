@@ -51,6 +51,19 @@ module.exports = {
                     ].join('\n'),
                     inline: false
                 },
+                // Reminder Commands
+                {
+                    name: '⏰ Reminder System',
+                    value: [
+                        '`/reminder create [message] [time]` - Create a new reminder',
+                        '`/reminder list [filter]` - List your active reminders',
+                        '`/reminder delete [reminder_id]` - Delete a specific reminder',
+                        '`/reminder edit [reminder_id] [new_message] [new_time]` - Edit a reminder',
+                        '`/reminder info [reminder_id]` - Get detailed info about a reminder',
+                        '`/reminder snooze [reminder_id] [time]` - Snooze a reminder'
+                    ].join('\n'),
+                    inline: false
+                },
                 // Utility Commands
                 {
                     name: '🔧 Utility',
@@ -71,6 +84,19 @@ module.exports = {
                         '`testing` - In testing phase',
                         '`completed` - Ticket resolved',
                         '`on_hold` - Pending further action'
+                    ].join('\n'),
+                    inline: true
+                },
+                // Reminder Time Formats
+                {
+                    name: '⏰ Reminder Time Formats',
+                    value: [
+                        '`in 30m` - 30 minutes from now',
+                        '`in 2h` - 2 hours from now',
+                        '`tomorrow at 3pm` - Tomorrow at 3 PM',
+                        '`2024-12-25 15:30` - Specific date/time',
+                        '`next monday` - Next Monday',
+                        '`daily`, `weekly`, `monthly` - Repeating reminders'
                     ].join('\n'),
                     inline: true
                 },

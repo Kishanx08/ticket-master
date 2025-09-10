@@ -3,6 +3,7 @@ const ticketManager = require('../utils/ticketManager');
 const transcriptManager = require('../utils/transcriptManager');
 const config = require('../config.json'); 
 const database = require('../utils/database');
+const ReminderScheduler = require('../utils/reminderScheduler');
 
 function getTypeConfig(ticketType) {
     if (ticketType === 'custom') {
@@ -91,6 +92,10 @@ async function handleButton(interaction) {
         await handleStatusChange(interaction);
     } else if (interaction.customId === 'edit_setup_embed') {
         await handleEditSetupEmbedButton(interaction);
+    } else if (interaction.customId.startsWith('reminder_')) {
+        // Handle reminder button interactions
+        const reminderScheduler = new ReminderScheduler(interaction.client);
+        await reminderScheduler.handleButtonInteraction(interaction);
     }
 }
 
